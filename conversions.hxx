@@ -14,6 +14,7 @@
 
 #include <concepts>
 #include <memory>
+#include <ranges>
 #include <utility>
 
 namespace irv {
@@ -146,18 +147,22 @@ namespace irv {
             typename tp_from_t,
             typename tp_to_t
         >
-        concept lifetime_startable_as = requires { std::start_lifetime_as<tp_to_t>(static_cast<void*>(std::addressof(std::declval<tp_from_t>()))); };
+        concept lifetime_startable_as =
+            std::is_implicit_lifetime_v<tp_to_t> &&
+            requires { std::start_lifetime_as<tp_to_t>(static_cast<void*>(std::addressof(std::declval<tp_from_t>()))); };
         
         template<
             typename tp_from_t,
             typename tp_to_t
         >
-        concept nothrow_lifetime_startable_as = noexcept(std::start_lifetime_as<tp_to_t>(std::declval<tp_from_t>()));
+        concept nothrow_lifetime_startable_as =
+            std::is_implicit_lifetime_v<tp_to_t> &&
+            noexcept(std::start_lifetime_as<tp_to_t>(std::declval<tp_from_t>()));
         
         template<typename tp_type_t>
         struct start_lifetime_as_fn {
             template<lifetime_startable_as<tp_type_t> tp_object_t>
-            requires(std::is_rvalue_reference_v<tp_object_t&&>)
+            requires(!std::is_rvalue_reference_v<tp_object_t&&>)
             auto constexpr operator()(tp_object_t&& p_object)
             const noexcept(
                 nothrow_lifetime_startable_as<
@@ -165,8 +170,8 @@ namespace irv {
                     tp_type_t
                 >
             )
-            -> tp_type_t {
-                return std::start_lifetime_as<tp_type_t>(static_cast<void*>(std::addressof(p_object)));
+            -> auto&& {
+                return *std::start_lifetime_as<tp_type_t>(static_cast<void*>(std::addressof(p_object)));
             }
         };
     }
