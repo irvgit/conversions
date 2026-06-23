@@ -208,6 +208,153 @@ namespace irv {
     }
     template<typename tp_type_t>
     auto constexpr convert_by_conversion_operator = detail::convert_by_operator_fn<tp_type_t>{};
+
+    namespace views {
+        namespace detail {
+            template<typename tp_type_t>
+            struct parenthesized_functional_cast_fn : std::ranges::range_adaptor_closure<parenthesized_functional_cast_fn<tp_type_t>> {
+                template<std::ranges::input_range tp_range_t>
+                requires(
+                    irv::detail::parenthesized_functional_castable<
+                        tp_type_t,
+                        std::ranges::range_reference_t<tp_range_t>
+                    >
+                )
+                auto constexpr operator()(tp_range_t&& p_range)
+                const noexcept(
+                    irv::detail::nothrow_parenthesized_functional_castable<
+                        tp_type_t,
+                        std::ranges::range_reference_t<tp_range_t>
+                    >
+                )
+                -> auto {
+                    return
+                        std::views::transform(
+                            std::forward<tp_range_t>(p_range),
+                            irv::parenthesized_functional_cast<tp_type_t>
+                        );
+                }
+            };
+        }
+        template<typename tp_type_t>
+        auto constexpr parenthesized_functional_cast = detail::parenthesized_functional_cast_fn<tp_type_t>{};
+
+        namespace detail {
+            template<typename tp_type_t>
+            struct braced_functional_cast_fn : std::ranges::range_adaptor_closure<braced_functional_cast_fn<tp_type_t>> {
+                template<std::ranges::input_range tp_range_t>
+                requires(
+                    irv::detail::braced_functional_castable<
+                        tp_type_t,
+                        std::ranges::range_reference_t<tp_range_t>
+                    >
+                )
+                auto constexpr operator()(tp_range_t&& p_range)
+                const noexcept(
+                    irv::detail::nothrow_braced_functional_castable<
+                        tp_type_t,
+                        std::ranges::range_reference_t<tp_range_t>
+                    >
+                )
+                -> auto {
+                    return
+                        std::views::transform(
+                            std::forward<tp_range_t>(p_range),
+                            irv::braced_functional_cast<tp_type_t>
+                        );
+                }
+            };
+        }
+        template<typename tp_type_t>
+        auto constexpr braced_functional_cast = detail::braced_functional_cast_fn<tp_type_t>{};
+
+        namespace detail {
+            template<typename tp_type_t>
+            struct static_cast_to_fn : std::ranges::range_adaptor_closure<static_cast_to_fn<tp_type_t>> {
+                template<std::ranges::input_range tp_range_t>
+                requires(
+                    irv::detail::static_castable_to<
+                        std::ranges::range_reference_t<tp_range_t>,
+                        tp_type_t
+                    >
+                )
+                auto constexpr operator()(tp_range_t&& p_range)
+                const noexcept(
+                    irv::detail::nothrow_static_castable_to<
+                        std::ranges::range_reference_t<tp_range_t>,
+                        tp_type_t
+                    >
+                )
+                -> auto {
+                    return
+                        std::views::transform(
+                            std::forward<tp_range_t>(p_range),
+                            irv::static_cast_to<tp_type_t>
+                        );
+                }
+            };
+        }
+        template<typename tp_type_t>
+        auto constexpr static_cast_to = detail::static_cast_to_fn<tp_type_t>{};
+
+        namespace detail {
+            template<typename tp_type_t>
+            struct start_lifetime_as_fn : std::ranges::range_adaptor_closure<start_lifetime_as_fn<tp_type_t>> {
+                template<std::ranges::input_range tp_range_t>
+                requires(
+                    irv::detail::lifetime_startable_as<
+                        std::ranges::range_reference_t<tp_range_t>,
+                        tp_type_t
+                    >
+                )
+                auto constexpr operator()(tp_range_t&& p_range)
+                const noexcept(
+                    irv::detail::nothrow_lifetime_startable_as<
+                        std::ranges::range_reference_t<tp_range_t>,
+                        tp_type_t
+                    >
+                )
+                -> auto {
+                    return
+                        std::views::transform(
+                            std::forward<tp_range_t>(p_range),
+                            irv::start_lifetime_as<tp_type_t>
+                        );
+                }
+            };
+        }
+        template<typename tp_type_t>
+        auto constexpr start_lifetime_as = detail::start_lifetime_as_fn<tp_type_t>{};
+
+        namespace detail {
+            template<typename tp_type_t>
+            struct convert_by_conversion_operator_fn : std::ranges::range_adaptor_closure<convert_by_conversion_operator_fn<tp_type_t>> {
+                template<std::ranges::input_range tp_range_t>
+                requires(
+                    irv::detail::convertible_to_by_member_conversion_operator<
+                        std::ranges::range_reference_t<tp_range_t>,
+                        tp_type_t
+                    >
+                )
+                auto constexpr operator()(tp_range_t&& p_range)
+                const noexcept(
+                    irv::detail::nothrow_convertible_to_by_member_conversion_operator<
+                        std::ranges::range_reference_t<tp_range_t>,
+                        tp_type_t
+                    >
+                )
+                -> auto {
+                    return
+                        std::views::transform(
+                            std::forward<tp_range_t>(p_range),
+                            irv::convert_by_conversion_operator<tp_type_t>
+                        );
+                }
+            };
+        }
+        template<typename tp_type_t>
+        auto constexpr convert_by_conversion_operator = detail::convert_by_conversion_operator_fn<tp_type_t>{};
+    }
 }
 
 #endif
